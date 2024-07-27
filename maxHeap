@@ -1,0 +1,163 @@
+import java.util.ArrayList;
+
+// Kelas BinaryHeap mengimplementasikan max heap menggunakan ArrayList untuk menyimpan elemen.
+public class BinaryHeap<AnyType extends Comparable<AnyType>> {
+    private ArrayList<AnyType> data; // Daftar untuk menyimpan elemen-elemen heap
+
+    // Konstruktor default yang menginisialisasi heap kosong.
+    public BinaryHeap() {
+        this.data = new ArrayList<AnyType>();
+    }
+
+    // Konstruktor yang menginisialisasi heap dengan daftar elemen dan kemudian melakukan heapify.
+    public BinaryHeap(ArrayList<AnyType> data) {
+        this.data = data;
+        heapify(); // Mengatur elemen-elemen dalam daftar untuk memenuhi properti heap
+    }
+
+    // Mengembalikan indeks dari parent node dari node pada indeks i
+    private int parentOf(int i) {
+        return (i - 1) / 2;
+    }
+
+    // Mengembalikan indeks dari child kiri dari node pada indeks i
+    private int leftChildOf(int i) {
+        return 2 * i + 1;
+    }
+
+    // Mengembalikan indeks dari child kanan dari node pada indeks i
+    private int rightChildOf(int i) {
+        return 2 * i + 2;
+    }
+
+    // Mengembalikan elemen root dari heap, yaitu nilai maksimum pada max heap
+    public AnyType peek() {
+        if (data.isEmpty()) {
+            throw new RuntimeException("Heap kosong"); // Menangani kasus heap kosong
+        }
+        return data.get(0); // Mengembalikan data yang terletak di indeks 0
+    }
+
+    // Mencari elemen terbesar
+    public AnyType findMax() {
+        return peek(); // Pada max heap, elemen terbesar ada di root
+    }
+
+    // Menambahkan elemen baru ke heap dan memastikan properti heap tetap terjaga
+    public void add(AnyType newData) {
+        data.add(newData); // Tambahkan elemen ke akhir daftar
+        percolateUp(data.size() - 1); // Lakukan percolateUp pada data yang baru saja dimasukkan
+    }
+
+    // Menggerakkan elemen pada indeks upThis ke atas heap hingga properti heap terjaga
+    private void percolateUp(int upThis) {
+        int parent = parentOf(upThis); // Mencari indeks parent dari element indeks upThis, kemudian menyimpannya di parent
+        AnyType value = data.get(upThis); // Mencari element indeks upThis, kemudian menyimpannya di variabel value
+        // Pindahkan elemen ke atas sampai berada pada posisi yang benar. Selama indeks upThis bukan 0 (bukan indeks root) dan value > parent, maka lakukan penukaran 
+        while (upThis > 0 && value.compareTo(data.get(parent)) > 0) {
+            data.set(upThis, data.get(parent)); // Tukar elemen di indeks UpThis dengan element di indeks parent
+            upThis = parent; // Perbaharui indeks upThis menggunakan indeks parent tadi
+            parent = parentOf(upThis); // Perbaharui indeks parent dari element indeks upThis
+        }
+        data.set(upThis, value); // timpa element indeks upThis menggunakan value
+    }
+
+    // Menghapus dan mengembalikan elemen maksimum dari heap
+    public AnyType remove() {
+        AnyType maxVal = peek(); // Ambil elemen root
+        data.set(0, data.get(data.size() - 1)); // Timpa elemen root dengan elemen terakhir
+        data.remove(data.size() - 1); // Hapus elemen terakhir
+        // Jika tree tidak kosong, maka lakukan percolateDown dimulai dari root 
+        if (!data.isEmpty()) {
+            percolateDown(0);
+        }
+        return maxVal; // Kembalikan nilai maksimum yang dihapus
+    }
+
+    // Menggerakkan elemen pada indeks downThis ke bawah heap hingga properti heap terjaga
+    private void percolateDown(int downThis) {
+        int heapSize = data.size(); //Menghitung jumlah elemen di dalam tree, kemudian menyimpannya di variabel heapSize
+        AnyType value = data.get(downThis); // Mencari element indeks downThis, kemudian menyimpannya di variabel value
+        // Pindahkan elemen ke bawah sampai berada pada posisi yang benar. Selama indeks downThis lebih kecil dari ukuran heap
+        while (downThis < heapSize) {
+            int childpos = leftChildOf(downThis); // Asumsikan anak kiri dari element upThis sebagai elemen paling terbesar, kemudian simpan indeks dari element kiri upThis di variabel childpos
+            // Jika childpos < ukuran heap, maka lakukan proses di bawah
+            if (childpos < heapSize) {
+                // Jika downThis memiliki anak kanan dan element anak kanan > element anak kiri, maka childpos dipindah ke indeks anak kanan
+                if (rightChildOf(downThis) < heapSize && data.get(rightChildOf(downThis)).compareTo(data.get(childpos)) > 0) {
+                    childpos = rightChildOf(downThis); // childpos dipindah ke indeks anak kanan
+                }
+
+                // Jika element childpos > element parent, maka element dari indeks downThis ditimpa dengan element dari indeks childpos
+                if (data.get(childpos).compareTo(value) > 0) {
+                    data.set(downThis, data.get(childpos)); // Element dari indeks downThis ditimpa dengan element dari indeks childpos
+                    downThis = childpos; // downThis dipindah ke posisi childpos
+                } 
+                
+                // Jika element parent < element anak-anaknya, maka timpa element indeks downThis menggunakan value
+                else {
+                    data.set(downThis, value);
+                    return;
+                }
+            } 
+            
+            // Jika childpos > ukuran heap, maka timpa element indeks downThis menggunakan value
+            else {
+                data.set(downThis, value);
+                return;
+            }
+        }
+    }
+
+    // Mengatur ulang elemen-elemen dalam heap untuk memenuhi properti heap
+    private void heapify() {
+        for (int i = parentOf(data.size() - 1); i >= 0; i--) {
+            percolateDown(i); // Percolate setiap node ke bawah untuk menjaga properti heap
+        }
+    }
+
+    // Memeriksa apakah heap kosong
+    public boolean isEmpty() {
+        return data.size() == 0; // Jumlah elemen dalam tree ialah 0, sehingga tree kosong
+    }
+
+    // Menghitung jumlah data dalam heap
+    public int size() {
+        return data.size(); //
+    }
+
+    // Menghapus semua elemen dalam heap
+    public void clear() {
+        data.clear();
+    }
+
+    // Mencetak semua data dalam heap
+    public String toString() {
+        return "<Data: " + data + ">";
+    }
+
+    // Metode utama untuk menguji kelas BinaryHeap
+    public static void main(String[] args) {
+        BinaryHeap<Integer> maxHeap = new BinaryHeap<>();
+
+        // Menambahkan nilai-nilai ke heap maksimum
+        maxHeap.add(142);
+        maxHeap.add(542);
+        maxHeap.add(121);
+        maxHeap.add(67);
+        maxHeap.add(353);
+        maxHeap.add(779);
+        maxHeap.add(572);
+        maxHeap.add(434);
+        maxHeap.add(111);
+        maxHeap.add(457);
+        maxHeap.add(99);
+
+        // Cetak heap
+        System.out.println("Heap: " + maxHeap);
+
+        // Ekstrak dan cetak nilai maksimum dari heap
+        System.out.println("Ekstraksi Maksimum: " + maxHeap.remove());
+        System.out.println("Heap Setelah Ekstraksi: " + maxHeap);
+    }
+}
